@@ -1,7 +1,6 @@
 services:
   backend:
-    build:
-      context: .
+    image: ghcr.io/zhy0504/star-savings:latest
     container_name: star-backend
     volumes:
       - ./backend/storage:/var/www/html/storage

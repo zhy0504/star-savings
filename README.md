@@ -41,36 +41,69 @@
 
 ### 🐳 Docker部署（推荐）
 
-#### 方式一：使用 GitHub Container Registry（推荐）
-
-```bash
-# 1. 拉取最新镜像
-docker pull ghcr.io/zhy0504/star-savings:latest
-
-# 2. 运行容器
-docker run -d \
-  --name star-savings \
-  -p 9000:9000 \
-  -v $(pwd)/database:/var/www/html/database \
-  ghcr.io/zhy0504/star-savings:latest
-
-# 3. 配置 Nginx 反向代理（可选）
-# 参考项目中的 nginx.conf 配置文件
-```
-
-#### 方式二：使用 Docker Compose
+#### 方式一：使用 Docker Compose（推荐）
 
 ```bash
 # 1. 克隆项目
 git clone https://github.com/zhy0504/star-savings.git
 cd star-savings
 
-# 2. 启动服务
+# 2. 启动服务（自动从 GitHub Container Registry 拉取镜像）
 docker compose up -d
 
 # 3. 访问应用
 # 浏览器打开: http://localhost:8080
 # 默认认证: 用户名 admin，密码 star123
+```
+
+#### 方式二：使用预构建镜像 + 自定义配置
+
+如果你想使用 GitHub Container Registry 的预构建镜像，需要配置完整的服务栈：
+
+```bash
+# 1. 创建 docker-compose.yml 文件
+cat > docker-compose.yml << 'EOF'
+services:
+  backend:
+    image: ghcr.io/zhy0504/star-savings:latest
+    container_name: star-backend
+    volumes:
+      - ./storage:/var/www/html/storage
+      - app-public:/var/www/html/public
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/var/www/html/storage/app/database.sqlite
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: star-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./htpasswd:/etc/nginx/.htpasswd:ro
+      - app-public:/var/www/html/public:ro
+      - ./storage:/var/www/html/storage:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  app-public:
+EOF
+
+# 2. 下载 nginx.conf 和 .htpasswd 配置文件
+wget https://raw.githubusercontent.com/zhy0504/star-savings/main/nginx.conf
+wget https://raw.githubusercontent.com/zhy0504/star-savings/main/.htpasswd -O htpasswd
+
+# 3. 创建存储目录
+mkdir -p storage/app storage/framework/{sessions,views,cache} storage/logs
+
+# 4. 启动服务
+docker compose up -d
 ```
 
 ### 🎨 本地开发环境
@@ -262,9 +295,13 @@ docker compose restart nginx
 ```bash
 # 1. 准备服务器（x86架构的NAS、小主机等）
 # 2. 安装Docker和Docker Compose
-# 3. 直接使用预构建镜像
-docker pull ghcr.io/zhy0504/star-savings:latest
-docker run -d -p 9000:9000 ghcr.io/zhy0504/star-savings:latest
+# 3. 克隆项目并启动
+git clone https://github.com/zhy0504/star-savings.git
+cd star-savings
+docker compose up -d
+
+# 访问: http://服务器IP:8080
+# 默认认证: 用户名 admin，密码 star123
 ```
 
 ### ☁️ 云服务器部署

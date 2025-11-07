@@ -1,5 +1,10 @@
 # 🌟 星星存折 - 儿童奖励管理系统
 
+[![Docker Build](https://github.com/zhy0504/star-savings/actions/workflows/docker-build.yml/badge.svg)](https://github.com/zhy0504/star-savings/actions/workflows/docker-build.yml)
+[![GitHub Container Registry](https://img.shields.io/badge/GHCR-latest-blue?logo=github)](https://github.com/zhy0504/star-savings/pkgs/container/star-savings)
+[![License](https://img.shields.io/github/license/zhy0504/star-savings)](LICENSE)
+
+
 一个基于Vue.js + Laravel的现代化儿童星星奖励管理系统，使用GitHub Container Registry容器化部署。帮助家长用有趣的方式管理孩子的日常行为和奖励制度。
 
 > 🎯 适合年龄：3-12岁儿童的家庭使用
@@ -28,7 +33,7 @@
 
 ### 🐳 容器化部署
 - **Docker支持** - 一键部署到任何平台
-- **多平台** - 支持linux/amd64和linux/arm64
+- **x86平台** - 支持 linux/amd64 架构
 - **自动化CI/CD** - GitHub Actions自动构建
 - **健康检查** - 实时监控服务状态
 
@@ -36,9 +41,28 @@
 
 ### 🐳 Docker部署（推荐）
 
+#### 方式一：使用 GitHub Container Registry（推荐）
+
+```bash
+# 1. 拉取最新镜像
+docker pull ghcr.io/zhy0504/star-savings:latest
+
+# 2. 运行容器
+docker run -d \
+  --name star-savings \
+  -p 9000:9000 \
+  -v $(pwd)/database:/var/www/html/database \
+  ghcr.io/zhy0504/star-savings:latest
+
+# 3. 配置 Nginx 反向代理（可选）
+# 参考项目中的 nginx.conf 配置文件
+```
+
+#### 方式二：使用 Docker Compose
+
 ```bash
 # 1. 克隆项目
-git clone https://github.com/YOUR_USERNAME/star-savings.git
+git clone https://github.com/zhy0504/star-savings.git
 cd star-savings
 
 # 2. 启动服务
@@ -236,12 +260,11 @@ docker compose restart nginx
 
 ### 🏠 家庭部署
 ```bash
-# 1. 准备服务器（树莓派、NAS等）
+# 1. 准备服务器（x86架构的NAS、小主机等）
 # 2. 安装Docker和Docker Compose
-# 3. 克隆项目并启动
-git clone https://github.com/YOUR_USERNAME/star-savings.git
-cd star-savings
-docker compose up -d
+# 3. 直接使用预构建镜像
+docker pull ghcr.io/zhy0504/star-savings:latest
+docker run -d -p 9000:9000 ghcr.io/zhy0504/star-savings:latest
 ```
 
 ### ☁️ 云服务器部署

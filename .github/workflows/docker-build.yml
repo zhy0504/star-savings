@@ -9,10 +9,9 @@ on:
     types: [ published ]
 
 env:
-  # Docker镜像名称
-  IMAGE_NAME: star-savings
-  # GitHub Container Registry配置
-  GHCR_OWNER: ${{ github.repository_owner }}
+  # Docker镜像名称 - 使用完整的仓库名避免组织包问题
+  IMAGE_NAME: ${{ github.repository }}
+  # GitHub Container Registry配置 - 直接使用仓库名
   GHCR_REGISTRY: ghcr.io
   # 镜像标签
   IMAGE_TAG: ${{ github.sha }}
@@ -91,7 +90,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_OWNER }}/${{ env.IMAGE_NAME }}
+        images: ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -117,7 +116,7 @@ jobs:
     - name: ✅ 构建成功通知
       run: |
         echo "🎉 Docker镜像构建成功！"
-        echo "📦 镜像标签: ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+        echo "📦 镜像标签: ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
 
   # 🧪 集成测试
   integration-test:
@@ -139,7 +138,7 @@ jobs:
         version: '3.8'
         services:
           backend:
-            image: ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            image: ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             container_name: star-backend-test
             volumes:
               - ./backend/storage:/var/www/html/storage
@@ -208,7 +207,7 @@ jobs:
     - name: 🚀 部署到生产服务器
       run: |
         echo "🎯 准备部署到生产环境..."
-        echo "📦 使用镜像: ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+        echo "📦 使用镜像: ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
 
         # 这里可以添加你的部署脚本
         # 例如：SSH到服务器，拉取最新镜像，重启容器等
@@ -220,7 +219,7 @@ jobs:
       run: |
         echo "📧 发送部署通知..."
         echo "🔗 GitHub仓库: ${{ github.repository }}"
-        echo "🏷️ 镜像标签: ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+        echo "🏷️ 镜像标签: ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
         echo "🚀 部署状态: ${{ job.status }}"
 
   # 🏷️ 更新最新标签
@@ -240,7 +239,7 @@ jobs:
 
     - name: 🏷️ 重新标记为latest
       run: |
-        docker pull ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-        docker tag ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_OWNER }}/${{ env.IMAGE_NAME }}:latest
-        docker push ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_OWNER }}/${{ env.IMAGE_NAME }}:latest
+        docker pull ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+        docker tag ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        docker push ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         echo "✅ latest标签更新完成"

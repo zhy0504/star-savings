@@ -89,6 +89,16 @@ class SettingController extends Controller
                 ], 422);
             }
             $value = (int) $value;
+        } elseif ($existingSetting->type === 'json') {
+            // For JSON type, encode the value if it's an array
+            if (is_array($value)) {
+                $value = json_encode($value);
+            } elseif (!is_string($value)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Value must be a valid JSON array',
+                ], 422);
+            }
         }
 
         Setting::set($key, $value, $existingSetting->type, $existingSetting->description);

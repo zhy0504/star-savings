@@ -125,22 +125,46 @@ const errorMessage = ref("");
 const submitting = ref(false);
 const submitButtonRef = ref<HTMLButtonElement>();
 const maxStarsPerAdd = ref(100); // Default value, will be loaded from settings
+const addReasonTags = ref([
+  { emoji: "😊", text: "认真" },
+  { emoji: "🏃", text: "主动" },
+  { emoji: "😴", text: "按时" },
+  { emoji: "🤝", text: "分享" },
+]);
+const subtractReasonTags = ref([
+  { emoji: "😢", text: "不听话" },
+  { emoji: "🎮", text: "玩太久" },
+  { emoji: "😴", text: "不按时" },
+  { emoji: "😤", text: "发脾气" },
+]);
 
 const { flyStarIn, flyStarOut, shake, bounce } = useAnimations();
 
-// Load max stars setting
-const loadMaxStars = async () => {
+// Load settings
+const loadSettings = async () => {
   try {
-    const value = await settingsApi.get('max_stars_per_add');
-    maxStarsPerAdd.value = value;
+    // Load max stars
+    const maxStars = await settingsApi.get('max_stars_per_add');
+    maxStarsPerAdd.value = maxStars;
+
+    // Load reason tags
+    const addReasons = await settingsApi.get('add_star_reasons');
+    if (addReasons && addReasons.length > 0) {
+      addReasonTags.value = addReasons;
+    }
+
+    const subtractReasons = await settingsApi.get('subtract_star_reasons');
+    if (subtractReasons && subtractReasons.length > 0) {
+      subtractReasonTags.value = subtractReasons;
+    }
   } catch (error) {
-    console.error('Failed to load max stars setting:', error);
-    // Keep default value of 100
+    console.error('Failed to load settings:', error);
+    // Keep default values
   }
 };
 
 onMounted(() => {
-  loadMaxStars();
+  loadSettings();
 });
 
 const genderEmoji = computed(() => getGenderEmoji(props.child.gender));
@@ -150,21 +174,7 @@ const contentClass = computed(() => {
 });
 
 const reasonTags = computed(() => {
-  if (props.type === "add") {
-    return [
-      { emoji: "😊", text: "认真" },
-      { emoji: "🏃", text: "主动" },
-      { emoji: "😴", text: "按时" },
-      { emoji: "🤝", text: "分享" },
-    ];
-  } else {
-    return [
-      { emoji: "😢", text: "不听话" },
-      { emoji: "🎮", text: "玩太久" },
-      { emoji: "😴", text: "不按时" },
-      { emoji: "😤", text: "发脾气" },
-    ];
-  }
+  return props.type === "add" ? addReasonTags.value : subtractReasonTags.value;
 });
 
 const decreaseAmount = () => {

@@ -30,6 +30,32 @@ return new class extends Migration
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'key' => 'add_star_reasons',
+                'value' => json_encode([
+                    ['emoji' => '😊', 'text' => '认真'],
+                    ['emoji' => '🏃', 'text' => '主动'],
+                    ['emoji' => '😴', 'text' => '按时'],
+                    ['emoji' => '🤝', 'text' => '分享'],
+                ]),
+                'type' => 'json',
+                'description' => '加星星的理由标签',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'key' => 'subtract_star_reasons',
+                'value' => json_encode([
+                    ['emoji' => '😢', 'text' => '不听话'],
+                    ['emoji' => '🎮', 'text' => '玩太久'],
+                    ['emoji' => '😴', 'text' => '不按时'],
+                    ['emoji' => '😤', 'text' => '发脾气'],
+                ]),
+                'type' => 'json',
+                'description' => '减星星的理由标签',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 

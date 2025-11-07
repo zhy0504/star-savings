@@ -1,6 +1,6 @@
 # 🌟 星星存折 - 儿童奖励管理系统
 
-[![Docker Build](https://github.com/zhy0504/star-savings/workflows/%F0%9D%20Docker%20Build%20%26%20Deploy/badge.svg)](https://github.com/YOUR_USERNAME/star-savings/actions)
+[![Docker Build](https://github.com/zhy0504/star-savings/workflows/%F0%9D%20Docker%20Build%20%26%20Deploy/badge.svg)](https://github.com/zhy0504/star-savings/actions)
 [![GitHub Container Registry](https://img.shields.io/github/v/release/zhy0504/star-savings?label=GHCR&logo=github)](https://github.com/zhy0504/star-savings/pkgs/container/star-savings)
 [![License](https://img.shields.io/github/license/zhy0504/star-savings)](LICENSE)
 

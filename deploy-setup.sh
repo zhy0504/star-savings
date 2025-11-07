@@ -8,8 +8,10 @@ echo "======================================"
 echo "Star Savings 部署初始化"
 echo "======================================"
 
-# 设置部署目录
-DEPLOY_DIR="/root/docker/star"
+# 设置部署目录（可通过环境变量覆盖）
+DEPLOY_DIR="${DEPLOY_DIR:-/root/docker/star}"
+# 设置访问端口（可通过环境变量覆盖）
+PORT="${PORT:-8080}"
 
 echo "1. 创建必要的目录结构..."
 mkdir -p ${DEPLOY_DIR}/backend/storage/app
@@ -39,5 +41,9 @@ echo "2. 进入部署目录: cd ${DEPLOY_DIR}"
 echo "3. 启动服务: docker compose up -d"
 echo "4. 查看日志: docker compose logs -f"
 echo ""
-echo "访问地址: http://你的服务器IP:803"
+echo "访问地址: http://你的服务器IP:${PORT}"
 echo "默认认证: 用户名 admin，密码 star123"
+echo ""
+echo "提示："
+echo "- 如需修改端口，请编辑 docker-compose.yml 中的端口映射"
+echo "- 如需修改密码，请使用: htpasswd -c .htpasswd admin"

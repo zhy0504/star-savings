@@ -38,14 +38,14 @@
                     v-model.number="amount"
                     class="amount-input"
                     min="1"
-                    :max="type === 'subtract' ? child.star_count : 50"
+                    :max="type === 'subtract' ? child.star_count : 100"
                   />
                   <button
                     class="btn-control"
                     @click="increaseAmount"
                     :disabled="
                       (type === 'subtract' && amount >= child.star_count) ||
-                      amount >= 50
+                      amount >= 100
                     "
                   >
                     ＋
@@ -157,7 +157,7 @@ const decreaseAmount = () => {
 };
 
 const increaseAmount = () => {
-  const max = props.type === "subtract" ? props.child.star_count : 50;
+  const max = props.type === "subtract" ? props.child.star_count : 100;
   if (amount.value < max) {
     amount.value++;
   }

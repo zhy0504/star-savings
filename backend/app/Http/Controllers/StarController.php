@@ -17,7 +17,7 @@ class StarController extends Controller
     public function add(Request $request, Child $child): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'amount' => 'required|integer|min:1|max:50',
+            'amount' => 'required|integer|min:1|max:100',
             'reason' => 'nullable|string|max:255',
         ]);
 

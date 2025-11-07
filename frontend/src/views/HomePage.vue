@@ -1,6 +1,7 @@
 <template>
   <div class="home-page">
     <header class="header">
+      <button class="btn-settings" @click="goToSettings">⚙️</button>
       <h1 class="title">🌟 星星存折 🌟</h1>
       <button class="btn-add" @click="showAddChildModal = true">➕</button>
     </header>
@@ -105,6 +106,10 @@ const goToRewards = () => {
   router.push('/rewards')
 }
 
+const goToSettings = () => {
+  router.push('/settings')
+}
+
 onMounted(() => {
   loadChildren()
 })
@@ -132,6 +137,29 @@ onMounted(() => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.btn-settings {
+  position: absolute;
+  left: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(132, 250, 176, 0.4);
+  transition: transform 0.2s;
+}
+
+.btn-settings:hover {
+  transform: scale(1.1);
+}
+
+.btn-settings:active {
+  transform: scale(0.95);
 }
 
 .btn-add {

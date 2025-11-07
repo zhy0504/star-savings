@@ -19,7 +19,6 @@ class RewardController extends Controller
     public function index(): JsonResponse
     {
         $rewards = Reward::with('children:id,name,star_count,avatar')
-            ->orderBy('is_redeemed')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -112,14 +111,6 @@ class RewardController extends Controller
      */
     public function update(Request $request, Reward $reward): JsonResponse
     {
-        // Don't allow updating redeemed rewards
-        if ($reward->is_redeemed) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cannot update redeemed reward',
-            ], 400);
-        }
-
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
             'star_cost' => 'sometimes|required|integer|min:1',
@@ -200,14 +191,6 @@ class RewardController extends Controller
      */
     public function redeem(Request $request, Reward $reward): JsonResponse
     {
-        // Check if already redeemed
-        if ($reward->is_redeemed) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Reward already redeemed',
-            ], 400);
-        }
-
         $validator = Validator::make($request->all(), [
             'deductions' => 'required|array',
             'deductions.*.child_id' => 'required|exists:children,id',
@@ -265,12 +248,6 @@ class RewardController extends Controller
                         'deduction_amount' => $amount,
                     ]);
                 }
-
-                // Mark reward as redeemed
-                $reward->update([
-                    'is_redeemed' => true,
-                    'redeemed_at' => now(),
-                ]);
             });
 
             return response()->json([
@@ -291,14 +268,6 @@ class RewardController extends Controller
      */
     public function destroy(Reward $reward): JsonResponse
     {
-        // Don't allow deleting redeemed rewards
-        if ($reward->is_redeemed) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cannot delete redeemed reward',
-            ], 400);
-        }
-
         // Delete image
         if ($reward->image) {
             Storage::disk('public')->delete($reward->image);

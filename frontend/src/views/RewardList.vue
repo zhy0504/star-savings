@@ -9,12 +9,12 @@
     <div v-if="loading" class="loading">Loading...</div>
 
     <div v-else class="rewards-container">
-      <!-- Available Rewards -->
-      <section v-if="availableRewards.length > 0" class="rewards-section">
-        <h2 class="section-title">🎯 可兑换</h2>
+      <!-- All Rewards -->
+      <section v-if="rewards.length > 0" class="rewards-section">
+        <h2 class="section-title">🎁 所有愿望</h2>
         <div class="rewards-grid">
           <div
-            v-for="reward in availableRewards"
+            v-for="reward in rewards"
             :key="reward.id"
             class="reward-card card"
           >
@@ -110,48 +110,6 @@
         </div>
       </section>
 
-      <!-- Redeemed Rewards -->
-      <section v-if="redeemedRewards.length > 0" class="rewards-section">
-        <h2 class="section-title">✅ 已兑换</h2>
-        <div class="rewards-grid">
-          <div
-            v-for="reward in redeemedRewards"
-            :key="reward.id"
-            class="reward-card card redeemed"
-          >
-            <div class="reward-image">
-              <img v-if="reward.image" :src="reward.image" :alt="reward.name" />
-              <span v-else class="image-placeholder">🎁</span>
-              <div class="redeemed-overlay">✓</div>
-            </div>
-
-            <h3 class="reward-name">{{ reward.name }}</h3>
-            <div class="reward-cost">需要 {{ reward.star_cost }}⭐</div>
-
-            <div class="participants">
-              <div
-                v-for="child in reward.children"
-                :key="child.id"
-                class="participant-avatar"
-                :title="child.name"
-              >
-                <img
-                  v-if="child.avatar"
-                  :src="child.avatar"
-                  :alt="child.name"
-                  class="avatar-image"
-                />
-                <div v-else class="avatar-placeholder">
-                  {{ child.name?.charAt(0) || '?' }}
-                </div>
-              </div>
-            </div>
-
-            <div class="redeemed-date">已兑换 {{ reward.redeemed_at }}</div>
-          </div>
-        </div>
-      </section>
-
       <div v-if="rewards.length === 0" class="empty-state">
         <p class="empty-text">还没有奖品哦～</p>
         <p class="empty-hint">点击右上角 ➕ 创建第一个奖品吧！</p>
@@ -202,13 +160,7 @@ const selectedReward = ref<Reward | null>(null);
 const editingReward = ref<Reward | null>(null);
 const activeMenuId = ref<number | null>(null);
 
-const availableRewards = computed(() =>
-  rewards.value.filter((r) => !r.is_redeemed)
-);
-
-const redeemedRewards = computed(() =>
-  rewards.value.filter((r) => r.is_redeemed)
-);
+// No need to filter rewards anymore - all rewards are always available
 
 const loadRewards = async () => {
   try {

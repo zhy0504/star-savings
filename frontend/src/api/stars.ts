@@ -1,5 +1,5 @@
 import api from './index'
-import type { ApiResponse, StarOperationRequest } from '@/types'
+import type { ApiResponse, StarOperationRequest, StarRecord } from '@/types'
 
 export const starsApi = {
   // Add stars to a child
@@ -22,6 +22,17 @@ export const starsApi = {
     )
     if (!response.data.data) {
       throw new Error('Failed to subtract stars')
+    }
+    return response.data.data
+  },
+
+  // Get recent star records
+  getRecent: async (limit: number = 10): Promise<StarRecord[]> => {
+    const response = await api.get<ApiResponse<StarRecord[]>>(
+      `/stars/recent?limit=${limit}`
+    )
+    if (!response.data.data) {
+      throw new Error('Failed to get recent star records')
     }
     return response.data.data
   },

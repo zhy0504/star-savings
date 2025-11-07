@@ -12,16 +12,21 @@
       <p class="empty-hint">点击右上角 ➕ 添加第一个小朋友吧！</p>
     </div>
 
-    <div v-else class="children-grid">
-      <ChildCard
-        v-for="child in children"
-        :key="child.id"
-        :child="child"
-        @view="goToDetail"
-        @add-star="handleAddStar"
-        @subtract-star="handleSubtractStar"
-      />
-    </div>
+    <template v-else>
+      <div class="children-grid">
+        <ChildCard
+          v-for="child in children"
+          :key="child.id"
+          :child="child"
+          @view="goToDetail"
+          @add-star="handleAddStar"
+          @subtract-star="handleSubtractStar"
+        />
+      </div>
+
+      <!-- Recent Star Records -->
+      <RecentStarRecords ref="recentRecordsRef" :limit="10" />
+    </template>
 
     <button class="btn-rewards" @click="goToRewards">🎁</button>
 
@@ -50,6 +55,7 @@ import type { Child } from '@/types'
 import ChildCard from '@/components/ChildCard.vue'
 import StarModal from '@/components/StarModal.vue'
 import ChildFormModal from '@/components/ChildFormModal.vue'
+import RecentStarRecords from '@/components/RecentStarRecords.vue'
 
 const router = useRouter()
 const children = ref<Child[]>([])
@@ -58,6 +64,7 @@ const showStarModal = ref(false)
 const showAddChildModal = ref(false)
 const selectedChild = ref<Child | null>(null)
 const starOperationType = ref<'add' | 'subtract'>('add')
+const recentRecordsRef = ref<InstanceType<typeof RecentStarRecords> | null>(null)
 
 const loadChildren = async () => {
   try {
@@ -88,6 +95,10 @@ const handleSubtractStar = (child: Child) => {
 
 const handleStarSuccess = () => {
   loadChildren()
+  // Refresh recent records
+  if (recentRecordsRef.value) {
+    recentRecordsRef.value.refresh()
+  }
 }
 
 const goToRewards = () => {

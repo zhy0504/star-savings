@@ -19,6 +19,7 @@ Route::get('/health', function () {
 Route::apiResource('children', ChildController::class);
 
 // Star operations
+Route::get('stars/recent', [StarController::class, 'recent']);
 Route::post('children/{child}/stars/add', [StarController::class, 'add']);
 Route::post('children/{child}/stars/subtract', [StarController::class, 'subtract']);
 

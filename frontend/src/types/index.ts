@@ -17,6 +17,12 @@ export interface StarRecord {
   amount: number
   type: 'add' | 'subtract' | 'redeem'
   reason?: string
+  child?: {
+    id: number
+    name: string
+    gender: 'male' | 'female'
+    avatar: string | null
+  }
   reward?: {
     id: number
     name: string
@@ -90,4 +96,11 @@ export interface ChildFormData {
   birthday: string
   gender: 'male' | 'female'
   avatar?: File
+}
+
+// Reason tag types
+export interface ReasonTag {
+  emoji: string
+  text: string
+  amount: number
 }

@@ -50,6 +50,17 @@
               placeholder="理由文字"
               maxlength="10"
             />
+            <div class="amount-input-wrapper">
+              <input
+                type="number"
+                v-model.number="reason.amount"
+                class="amount-input"
+                min="1"
+                max="999"
+                placeholder="1"
+              />
+              <span class="amount-unit">⭐</span>
+            </div>
             <button class="btn-remove" @click="removeAddReason(index)">
               ✕
             </button>
@@ -86,6 +97,17 @@
               placeholder="理由文字"
               maxlength="10"
             />
+            <div class="amount-input-wrapper">
+              <input
+                type="number"
+                v-model.number="reason.amount"
+                class="amount-input"
+                min="1"
+                max="999"
+                placeholder="1"
+              />
+              <span class="amount-unit">⭐</span>
+            </div>
             <button class="btn-remove" @click="removeSubtractReason(index)">
               ✕
             </button>
@@ -112,11 +134,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { settingsApi } from '@/api/settings';
-
-interface ReasonTag {
-  emoji: string;
-  text: string;
-}
+import type { ReasonTag } from '@/types';
 
 const maxStarsPerAdd = ref(100);
 const addStarReasons = ref<ReasonTag[]>([]);
@@ -146,7 +164,7 @@ const loadSettings = async () => {
 };
 
 const addAddReason = () => {
-  addStarReasons.value.push({ emoji: '', text: '' });
+  addStarReasons.value.push({ emoji: '', text: '', amount: 1 });
 };
 
 const removeAddReason = (index: number) => {
@@ -154,7 +172,7 @@ const removeAddReason = (index: number) => {
 };
 
 const addSubtractReason = () => {
-  subtractStarReasons.value.push({ emoji: '', text: '' });
+  subtractStarReasons.value.push({ emoji: '', text: '', amount: 1 });
 };
 
 const removeSubtractReason = (index: number) => {
@@ -345,6 +363,40 @@ onMounted(() => {
 .text-input:focus {
   outline: none;
   border-color: #84fab0;
+}
+
+.amount-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: white;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  transition: border-color 0.2s;
+}
+
+.amount-input-wrapper:focus-within {
+  border-color: #84fab0;
+}
+
+.amount-input {
+  width: 50px;
+  height: 36px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  background: transparent;
+  color: #4caf50;
+}
+
+.amount-input:focus {
+  outline: none;
+}
+
+.amount-unit {
+  font-size: 16px;
 }
 
 .btn-remove {

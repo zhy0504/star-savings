@@ -124,4 +124,39 @@ class StarController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get recent star records for all children
+     */
+    public function recent(Request $request): JsonResponse
+    {
+        $limit = $request->input('limit', 10);
+
+        $records = StarRecord::with(['child:id,name,gender,avatar', 'reward:id,name,image'])
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $records->map(fn($record) => [
+                'id' => $record->id,
+                'amount' => $record->amount,
+                'type' => $record->type,
+                'reason' => $record->reason,
+                'child' => [
+                    'id' => $record->child->id,
+                    'name' => $record->child->name,
+                    'gender' => $record->child->gender,
+                    'avatar' => $record->child->avatar ? \Storage::url($record->child->avatar) : null,
+                ],
+                'reward' => $record->reward ? [
+                    'id' => $record->reward->id,
+                    'name' => $record->reward->name,
+                    'image' => $record->reward->image ? \Storage::url($record->reward->image) : null,
+                ] : null,
+                'created_at' => $record->created_at->format('Y-m-d H:i'),
+            ]),
+        ]);
+    }
 }

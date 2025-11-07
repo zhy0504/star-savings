@@ -61,9 +61,10 @@
                     :key="tag.text"
                     class="reason-tag"
                     :class="{ active: reason === tag.text }"
-                    @click="reason = tag.text"
+                    @click="selectReason(tag)"
                   >
                     {{ tag.emoji }} {{ tag.text }}
+                    <span class="tag-amount">{{ tag.amount }}⭐</span>
                   </button>
                 </div>
                 <input
@@ -101,7 +102,7 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { starsApi } from "@/api/stars";
 import { settingsApi } from "@/api/settings";
-import type { Child } from "@/types";
+import type { Child, ReasonTag } from "@/types";
 import { getGenderEmoji } from "@/utils/helpers";
 import { useAnimations } from "@/composables/useAnimations";
 
@@ -124,18 +125,19 @@ const reason = ref("");
 const errorMessage = ref("");
 const submitting = ref(false);
 const submitButtonRef = ref<HTMLButtonElement>();
+
 const maxStarsPerAdd = ref(100); // Default value, will be loaded from settings
-const addReasonTags = ref([
-  { emoji: "😊", text: "认真" },
-  { emoji: "🏃", text: "主动" },
-  { emoji: "😴", text: "按时" },
-  { emoji: "🤝", text: "分享" },
+const addReasonTags = ref<ReasonTag[]>([
+  { emoji: "😊", text: "认真", amount: 1 },
+  { emoji: "🏃", text: "主动", amount: 1 },
+  { emoji: "😴", text: "按时", amount: 1 },
+  { emoji: "🤝", text: "分享", amount: 2 },
 ]);
-const subtractReasonTags = ref([
-  { emoji: "😢", text: "不听话" },
-  { emoji: "🎮", text: "玩太久" },
-  { emoji: "😴", text: "不按时" },
-  { emoji: "😤", text: "发脾气" },
+const subtractReasonTags = ref<ReasonTag[]>([
+  { emoji: "😢", text: "不听话", amount: 1 },
+  { emoji: "🎮", text: "玩太久", amount: 1 },
+  { emoji: "😴", text: "不按时", amount: 1 },
+  { emoji: "😤", text: "发脾气", amount: 2 },
 ]);
 
 const { flyStarIn, flyStarOut, shake, bounce } = useAnimations();
@@ -176,6 +178,11 @@ const contentClass = computed(() => {
 const reasonTags = computed(() => {
   return props.type === "add" ? addReasonTags.value : subtractReasonTags.value;
 });
+
+const selectReason = (tag: ReasonTag) => {
+  reason.value = tag.text;
+  amount.value = tag.amount;
+};
 
 const decreaseAmount = () => {
   if (amount.value > 1) {
@@ -450,6 +457,15 @@ watch(
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tag-amount {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.7;
 }
 
 .reason-tag:hover {

@@ -5,6 +5,34 @@ echo "======================================"
 echo "Starting Laravel initialization..."
 echo "======================================"
 
+# Create .env file if it doesn't exist
+if [ ! -f "/var/www/html/.env" ]; then
+    echo "Creating .env file from environment variables..."
+    cat > /var/www/html/.env << EOF
+APP_NAME="Star Savings"
+APP_ENV=${APP_ENV:-production}
+APP_KEY=
+APP_DEBUG=${APP_DEBUG:-false}
+APP_URL=${APP_URL:-http://localhost}
+
+LOG_CHANNEL=${LOG_CHANNEL:-stack}
+LOG_LEVEL=debug
+
+DB_CONNECTION=${DB_CONNECTION:-sqlite}
+DB_DATABASE=${DB_DATABASE:-/var/www/html/storage/app/database.sqlite}
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+EOF
+    echo "✓ .env file created"
+else
+    echo "✓ .env file already exists"
+fi
+
 # Verify frontend build exists
 if [ ! -d "/var/www/html/public/dist" ]; then
     echo "⚠ WARNING: Frontend build not found at /var/www/html/public/dist"

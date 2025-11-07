@@ -80,3 +80,5 @@ backups/
 # 开发工具配置
 .nyc_output
 .eslintcache
+.claude
+.spec-workflow

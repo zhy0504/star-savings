@@ -79,11 +79,18 @@ jobs:
       with:
         sarif_file: 'trivy-results.sarif'
 
-    - name: 🔍 代码安全扫描
-      uses: securecodewarrior/github-action-add-sarif@v1
+      - name: 🔍 处理扫描结果
       if: always()
-      with:
-        sarif-file: 'trivy-results.sarif'
+      run: |
+        echo "✅ Trivy安全扫描完成"
+        echo "📄 SARIF结果文件: trivy-results.sarif"
+
+        # 显示扫描结果摘要
+        if [ -f "trivy-results.sarif" ]; then
+          echo "📊 扫描结果文件大小: $(wc -c < trivy-results.sarif) 字节"
+        else
+          echo "⚠️ 未生成SARIF结果文件"
+        fi
 
   # 📊 依赖检查报告
   dependency-report:

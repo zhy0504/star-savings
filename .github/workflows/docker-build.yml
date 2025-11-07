@@ -9,10 +9,10 @@ on:
     types: [ published ]
 
 env:
-  # Docker镜像名称 - 使用完整的仓库名避免组织包问题
-  IMAGE_NAME: ${{ github.repository }}
-  # GitHub Container Registry配置 - 直接使用仓库名
-  GHCR_REGISTRY: ghcr.io
+  # Docker镜像名称 - 使用简单的命名避免组织包问题
+  IMAGE_NAME: zhy0504/star-savings
+  # Docker Hub配置
+  DOCKER_REGISTRY: docker.io
   # 镜像标签
   IMAGE_TAG: ${{ github.sha }}
   # 最新标签
@@ -79,12 +79,12 @@ jobs:
     - name: 🟢 设置Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: 🔐 登录GitHub Container Registry
+    - name: 🔐 登录Docker Hub
       uses: docker/login-action@v3
       with:
-        registry: ${{ env.GHCR_REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: 🐳 构建并推送Docker镜像
       uses: docker/build-push-action@v5
@@ -93,8 +93,8 @@ jobs:
         platforms: ${{ matrix.platform }}
         push: true
         tags: |
-          ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:main
+          ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          ${{ env.IMAGE_NAME }}:latest
         labels: |
           org.opencontainers.image.title=${{ env.IMAGE_NAME }}
           org.opencontainers.image.revision=${{ github.sha }}
@@ -108,7 +108,7 @@ jobs:
     - name: ✅ 构建成功通知
       run: |
         echo "🎉 Docker镜像构建成功！"
-        echo "📦 镜像标签: ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+        echo "📦 镜像标签: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
 
   # 🧪 集成测试
   integration-test:
@@ -130,7 +130,7 @@ jobs:
         version: '3.8'
         services:
           backend:
-            image: ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             container_name: star-backend-test
             volumes:
               - ./backend/storage:/var/www/html/storage
@@ -199,7 +199,7 @@ jobs:
     - name: 🚀 部署到生产服务器
       run: |
         echo "🎯 准备部署到生产环境..."
-        echo "📦 使用镜像: ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+        echo "📦 使用镜像: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
 
         # 这里可以添加你的部署脚本
         # 例如：SSH到服务器，拉取最新镜像，重启容器等
@@ -211,7 +211,7 @@ jobs:
       run: |
         echo "📧 发送部署通知..."
         echo "🔗 GitHub仓库: ${{ github.repository }}"
-        echo "🏷️ 镜像标签: ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+        echo "🏷️ 镜像标签: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
         echo "🚀 部署状态: ${{ job.status }}"
 
   # 🏷️ 更新最新标签
@@ -222,16 +222,16 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
     steps:
-    - name: 🔐 登录GitHub Container Registry
+    - name: 🔐 登录Docker Hub
       uses: docker/login-action@v3
       with:
-        registry: ${{ env.GHCR_REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: 🏷️ 重新标记为latest
       run: |
-        docker pull ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-        docker tag ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-        docker push ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+        docker tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.IMAGE_NAME }}:latest
+        docker push ${{ env.IMAGE_NAME }}:latest
         echo "✅ latest标签更新完成"

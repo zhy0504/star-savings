@@ -305,11 +305,64 @@ docker compose up -d
 ```
 
 ### ☁️ 云服务器部署
+
+#### 完整部署步骤
+
 ```bash
-# 1. 购买云服务器（推荐2GB+内存）
-# 2. 配置域名和SSL证书
-# 3. 使用GitHub Actions自动部署
-# 4. 配置防火墙和安全组
+# 1. 创建部署目录
+mkdir -p /root/docker/star
+cd /root/docker/star
+
+# 2. 下载配置文件
+wget https://raw.githubusercontent.com/zhy0504/star-savings/main/docker-compose.yml
+wget https://raw.githubusercontent.com/zhy0504/star-savings/main/nginx.conf
+wget https://raw.githubusercontent.com/zhy0504/star-savings/main/.htpasswd
+wget https://raw.githubusercontent.com/zhy0504/star-savings/main/deploy-setup.sh
+
+# 3. 运行初始化脚本（创建目录和数据库文件）
+chmod +x deploy-setup.sh
+./deploy-setup.sh
+
+# 4. 修改 docker-compose.yml 中的路径（如果需要）
+# 将所有 ./backend/storage 改为 /root/docker/star/backend/storage
+# 将所有 ./nginx.conf 改为 /root/docker/star/nginx.conf
+# 将所有 ./.htpasswd 改为 /root/docker/star/.htpasswd
+
+# 5. 启动服务
+docker compose up -d
+
+# 6. 查看日志确认启动成功
+docker compose logs -f
+
+# 7. 配置防火墙（开放 8080 端口）
+ufw allow 8080/tcp
+# 或使用 iptables
+# iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
+```
+
+#### 常见问题排查
+
+**问题：数据库文件不存在错误**
+```bash
+# 手动创建数据库文件和目录
+mkdir -p /root/docker/star/backend/storage/app
+touch /root/docker/star/backend/storage/app/database.sqlite
+chown -R 33:33 /root/docker/star/backend/storage
+chmod -R 775 /root/docker/star/backend/storage
+docker compose restart backend
+```
+
+**问题：权限错误**
+```bash
+# 确保 storage 目录权限正确（www-data UID=33）
+chown -R 33:33 /root/docker/star/backend/storage
+chmod -R 775 /root/docker/star/backend/storage
+```
+
+**问题：端口被占用**
+```bash
+# 修改 docker-compose.yml 中的端口映射
+# 将 "8080:80" 改为 "你的端口:80"
 ```
 
 ## 📋 路线图

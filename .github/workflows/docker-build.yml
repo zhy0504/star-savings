@@ -86,27 +86,19 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: 🏷️ 生成元数据
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-
     - name: 🐳 构建并推送Docker镜像
       uses: docker/build-push-action@v5
       with:
         context: .
         platforms: ${{ matrix.platform }}
         push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
+        tags: |
+          ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:main
+        labels: |
+          org.opencontainers.image.title=${{ env.IMAGE_NAME }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
         build-args: |

@@ -1,0 +1,162 @@
+name: 🔒 安全扫描
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    # 每周一凌晨2点运行安全扫描
+    - cron: '0 2 * * 1'
+
+jobs:
+  # 🔍 前端依赖安全扫描
+  frontend-security:
+    name: 🔍 前端安全扫描
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v4
+
+    - name: 🟢 设置Node.js环境
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: 📦 安装前端依赖
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: 🔍 npm安全审计
+      working-directory: ./frontend
+      run: |
+        npm audit --audit-level moderate
+        echo "✅ 前端依赖安全扫描完成"
+
+    - name: 🔍 扫描敏感信息
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+
+  # 🔍 Docker镜像安全扫描
+  docker-security:
+    name: 🐳 Docker安全扫描
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v4
+
+    - name: 🟢 设置Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: 🐳 构建Docker镜像
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        load: true
+        tags: star-savings:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: 🔍 Trivy漏洞扫描
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'star-savings:test'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: 📤 上传Trivy扫描结果
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: 🔍 代码安全扫描
+      uses: securecodewarrior/github-action-add-sarif@v1
+      if: always()
+      with:
+        sarif-file: 'trivy-results.sarif'
+
+  # 📊 依赖检查报告
+  dependency-report:
+    name: 📊 依赖报告
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v4
+
+    - name: 🟢 设置Node.js环境
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: 📦 生成依赖报告
+      working-directory: ./frontend
+      run: |
+        npm install
+        npm ls --depth=0 > ../frontend-deps.txt
+
+    - name: 📤 上传依赖报告
+      uses: actions/upload-artifact@v3
+      with:
+        name: dependency-report
+        path: frontend-deps.txt
+        retention-days: 30
+
+  # 🛡️ 配置安全检查
+  config-security:
+    name: 🛡️ 配置安全检查
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v4
+
+    - name: 🔍 检查敏感文件
+      run: |
+        echo "🔍 检查是否包含敏感文件..."
+
+        # 检查是否有私钥文件
+        if [ -f "id_rsa" ] || [ -f "*.pem" ]; then
+          echo "❌ 发现私钥文件！"
+          exit 1
+        fi
+
+        # 检查是否有密码文件
+        if grep -r "password.*=" . --exclude-dir=node_modules --exclude-dir=.git; then
+          echo "⚠️ 发现可能的密码配置，请检查"
+        fi
+
+        # 检查Docker配置
+        if grep -r "expose 22" .; then
+          echo "⚠️ 发现SSH端口暴露"
+        fi
+
+        echo "✅ 配置安全检查完成"
+
+    - name: 🔍 检查Docker安全配置
+      run: |
+        echo "🔍 检查Docker配置安全性..."
+
+        # 检查是否以root用户运行
+        if grep -q "USER root" Dockerfile; then
+          echo "⚠️ Dockerfile中使用root用户"
+        else
+          echo "✅ Docker用户配置良好"
+        fi
+
+        # 检查敏感信息挂载
+        if docker-compose config | grep -q "\.env"; then
+          echo "⚠️ docker-compose中可能包含环境文件"
+        fi
+
+        echo "✅ Docker安全检查完成"

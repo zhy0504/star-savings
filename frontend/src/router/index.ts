@@ -17,6 +17,11 @@ const routes: RouteRecordRaw[] = [
     name: 'Rewards',
     component: () => import('@/views/RewardList.vue'),
   },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('@/views/SettingsView.vue'),
+  },
 ]
 
 const router = createRouter({

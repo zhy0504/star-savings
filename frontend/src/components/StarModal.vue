@@ -38,14 +38,14 @@
                     v-model.number="amount"
                     class="amount-input"
                     min="1"
-                    :max="type === 'subtract' ? child.star_count : 100"
+                    :max="type === 'subtract' ? child.star_count : maxStarsPerAdd"
                   />
                   <button
                     class="btn-control"
                     @click="increaseAmount"
                     :disabled="
                       (type === 'subtract' && amount >= child.star_count) ||
-                      amount >= 100
+                      amount >= maxStarsPerAdd
                     "
                   >
                     ＋
@@ -98,8 +98,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { starsApi } from "@/api/stars";
+import { settingsApi } from "@/api/settings";
 import type { Child } from "@/types";
 import { getGenderEmoji } from "@/utils/helpers";
 import { useAnimations } from "@/composables/useAnimations";
@@ -123,8 +124,24 @@ const reason = ref("");
 const errorMessage = ref("");
 const submitting = ref(false);
 const submitButtonRef = ref<HTMLButtonElement>();
+const maxStarsPerAdd = ref(100); // Default value, will be loaded from settings
 
 const { flyStarIn, flyStarOut, shake, bounce } = useAnimations();
+
+// Load max stars setting
+const loadMaxStars = async () => {
+  try {
+    const value = await settingsApi.get('max_stars_per_add');
+    maxStarsPerAdd.value = value;
+  } catch (error) {
+    console.error('Failed to load max stars setting:', error);
+    // Keep default value of 100
+  }
+};
+
+onMounted(() => {
+  loadMaxStars();
+});
 
 const genderEmoji = computed(() => getGenderEmoji(props.child.gender));
 
@@ -157,7 +174,7 @@ const decreaseAmount = () => {
 };
 
 const increaseAmount = () => {
-  const max = props.type === "subtract" ? props.child.star_count : 100;
+  const max = props.type === "subtract" ? props.child.star_count : maxStarsPerAdd.value;
   if (amount.value < max) {
     amount.value++;
   }

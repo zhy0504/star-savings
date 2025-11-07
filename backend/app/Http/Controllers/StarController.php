@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Child;
 use App\Models\StarRecord;
+use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,8 +17,11 @@ class StarController extends Controller
      */
     public function add(Request $request, Child $child): JsonResponse
     {
+        // Get max stars from settings
+        $maxStars = Setting::get('max_stars_per_add', 100);
+
         $validator = Validator::make($request->all(), [
-            'amount' => 'required|integer|min:1|max:100',
+            'amount' => "required|integer|min:1|max:{$maxStars}",
             'reason' => 'nullable|string|max:255',
         ]);
 
